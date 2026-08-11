@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Smart Curriculum & Attendance Portal — QR attendance, free-period productivity planning, and real-time analytics. An immersive 3D experience." />
+  <title>SmartEdu — Smart Curriculum & Attendance Portal</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="webgl-fallback" id="webglFallback" aria-hidden="true"></div>
+  <canvas id="webgl-canvas" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <!-- ========== LANDING / 3D PORTAL ========== -->
+  <div id="view-landing" class="view active">
+    <header class="landing-header">
+      <div class="logo">
+        <span class="logo-icon" aria-hidden="true">📚</span>
+        <span class="logo-text">SmartEdu</span>
+        <span class="brand-badge">3D</span>
+      </div>
+      <div class="header-actions">
+        <span class="live-badge"><span class="live-dot"></span> Live</span>
+        <button class="theme-toggle" id="themeToggleLanding" title="Toggle theme" aria-label="Toggle theme">
+          <span class="icon-sun" aria-hidden="true">☀️</span>
+          <span class="icon-moon" aria-hidden="true">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="landing-hero">
+      <div class="hero-inner">
+        <div class="eyebrow" data-reveal><span class="eyebrow-dot"></span> IMMERSIVE CAMPUS OS</div>
+        <h1 data-reveal>Smart Curriculum &amp;<br /><span class="grad">Attendance Portal</span></h1>
+        <p class="hero-sub" data-reveal>
+          Streamline attendance with dynamic QR codes, track free periods productively,
+          and gain real-time insights — built for modern classrooms.
+        </p>
+
+        <div class="cta-row" data-reveal>
+          <button class="keycap keycap-primary portal-card" data-portal="student" data-burst="true" data-color="#34d399">
+            <span class="portal-emoji" aria-hidden="true">🎓</span>
+            <span class="portal-text">
+              <span class="portal-title">Student Portal</span>
+              <span class="portal-desc">Scan QR · free-period planner</span>
+            </span>
+          </button>
+          <button class="keycap portal-card" data-portal="teacher" data-burst="true" data-color="#38bdf8">
+            <span class="portal-emoji" aria-hidden="true">👨‍🏫</span>
+            <span class="portal-text">
+              <span class="portal-title">Teacher Portal</span>
+              <span class="portal-desc">QR generator · live check-in</span>
+            </span>
+          </button>
+        </div>
+
+        <button class="admin-link" data-reveal data-portal="admin" data-burst="true" data-color="#a78bfa">
+          <span class="admin-link-icon" aria-hidden="true">📊</span>
+          Central Analytics &amp; Admin Dashboard
+        </button>
+
+        <div class="stats" data-reveal>
+          <div class="stat">
+            <span class="stat-value" data-count="89.4">0</span><span class="stat-suffix">%</span>
+            <span class="stat-label">Institution Attendance</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat">
+            <span class="stat-value" data-count="3912">0</span>
+            <span class="stat-label">QR Scans Today</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat">
+            <span class="stat-value" data-count="1284">0</span>
+            <span class="stat-label">Students Online</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat">
+            <span class="stat-value" data-count="47">0</span>
+            <span class="stat-label">Active Sessions</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-hint" aria-hidden="true">
+        <span>choose your role</span>
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+      </div>
+    </main>
+
+    <footer class="landing-footer">
+      <p>Smart Education Prototype · Hackathon Ready · Lightweight &amp; Responsive · Rendered in WebGL</p>
+    </footer>
+  </div>
+
+  <!-- ========== APP SHELL (Teacher / Student / Admin) ========== -->
+  <div id="app-shell" class="app-shell hidden">
+    <!-- Mobile top bar -->
+    <header class="mobile-header">
+      <button class="burger" id="burgerBtn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="mobile-logo">
+        <span class="logo-icon" aria-hidden="true">📚</span>
+        <span id="mobileTitle">SmartEdu</span>
+      </div>
+      <button class="theme-toggle" id="themeToggleApp" title="Toggle theme" aria-label="Toggle theme">
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span class="logo-icon" aria-hidden="true">📚</span>
+        <span class="logo-text">SmartEdu</span>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close menu">×</button>
+      </div>
+      <div class="sidebar-user hidden" id="sidebarUser"></div>
+      <nav class="sidebar-nav" id="sidebarNav">
+        <!-- Injected dynamically based on role -->
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="logoutBtn">← Back to Portal</button>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main content area -->
+    <main class="main-content" id="mainContent">
+      <!-- Views injected / shown here -->
+    </main>
+  </div>
+
+  <!-- ========== TEACHER VIEWS (templates) ========== -->
+  <template id="tpl-teacher-login">
+    <section class="view-panel login-panel">
+      <div class="login-card glass-card">
+        <div class="login-head">
+          <span class="card-icon" aria-hidden="true">👨‍🏫</span>
+          <h2>Teacher Login</h2>
+        </div>
+        <p class="muted">Secure access to class management &amp; attendance tools</p>
+        <form id="teacherLoginForm" class="login-form">
+          <label>
+            Email / Staff ID
+            <input type="email" id="teacherLoginEmail" placeholder="name@smartedu.edu" autocomplete="username" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="teacherLoginPassword" placeholder="Enter your password" autocomplete="current-password" required />
+          </label>
+          <p class="login-error hidden" id="teacherLoginError"></p>
+          <button type="submit" class="btn primary full">Sign In</button>
+        </form>
+        <p class="demo-hint">Demo staff — <strong>dr.sarah.chen@smartedu.edu</strong> / <strong>Atten@2026</strong></p>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-teacher-dashboard">
+    <section class="view-panel">
+      <div class="page-header">
+        <div>
+          <h1>Teacher Dashboard</h1>
+          <p class="muted">Welcome back, Dr. Sarah Chen · Computer Science Dept.</p>
+        </div>
+        <div class="header-actions">
+          <span class="badge success">3 Active Classes</span>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card glass-card" data-burst="true" data-color="#34d399">
+          <div class="kpi-label">Today’s Attendance</div>
+          <div class="kpi-value">87%</div>
+          <div class="kpi-trend up">↑ 4% vs yesterday</div>
+        </div>
+        <div class="kpi-card glass-card">
+          <div class="kpi-label">Students Present</div>
+          <div class="kpi-value">142 / 164</div>
+          <div class="kpi-trend">Across 3 sessions</div>
+        </div>
+        <div class="kpi-card glass-card">
+          <div class="kpi-label">Pending Reviews</div>
+          <div class="kpi-value">2</div>
+          <div class="kpi-trend warn">Late submissions</div>
+        </div>
+        <div class="kpi-card glass-card">
+          <div class="kpi-label">Avg. Class Engagement</div>
+          <div class="kpi-value">91%</div>
+          <div class="kpi-trend up">↑ 2%</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card glass-card">
+          <h3>Active Classes</h3>
+          <ul class="class-list">
+            <li>
+              <div class="class-info">
+                <strong>CS-301 · Data Structures</strong>
+                <span>Room 204 · 09:00–10:30</span>
+              </div>
+              <span class="badge success">Live</span>
+            </li>
+            <li>
+              <div class="class-info">
+                <strong>CS-210 · Algorithms</strong>
+                <span>Lab B · 11:00–12:30</span>
+              </div>
+              <span class="badge">Upcoming</span>
+            </li>
+            <li>
+              <div class="class-info">
+                <strong>CS-450 · Machine Learning</strong>
+                <span>Hall A · 14:00–15:30</span>
+              </div>
+              <span class="badge">Upcoming</span>
+            </li>
+          </ul>
+        </div>
+        <div class="card glass-card">
+          <h3>Attendance Overview (Last 7 Days)</h3>
+          <canvas id="teacherMiniChart" height="180"></canvas>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-teacher-classes">
+    <section class="view-panel">
+      <div class="page-header">
+        <div>
+          <h1>Class Management</h1>
+          <p class="muted">Create and manage your courses</p>
+        </div>
+        <button class="btn primary" id="btnCreateClass">+ Create Class</button>
+      </div>
+
+      <div class="card glass-card">
+        <div class="table-wrap">
+          <table class="data-table" id="classesTable">
+            <thead>
+              <tr>
+                <th>Course Code</th>
+                <th>Title</th>
+                <th>Schedule</th>
+                <th>Students</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CS-301</td>
+                <td>Data Structures</td>
+                <td>Mon, Wed · 09:00</td>
+                <td>48</td>
+                <td><span class="badge success">Active</span></td>
+                <td><button class="btn-sm btn-edit">Edit</button> <button class="btn-sm btn-delete">Delete</button></td>
+              </tr>
+              <tr>
+                <td>CS-210</td>
+                <td>Algorithms</td>
+                <td>Tue, Thu · 11:00</td>
+                <td>52</td>
+                <td><span class="badge success">Active</span></td>
+                <td><button class="btn-sm btn-edit">Edit</button> <button class="btn-sm btn-delete">Delete</button></td>
+              </tr>
+              <tr>
+                <td>CS-450</td>
+                <td>Machine Learning</td>
+                <td>Fri · 14:00</td>
+                <td>36</td>
+                <td><span class="badge success">Active</span></td>
+                <td><button class="btn-sm btn-edit">Edit</button> <button class="btn-sm btn-delete">Delete</button></td>
+              </tr>
+              <tr>
+                <td>CS-110</td>
+                <td>Intro to Programming</td>
+                <td>Mon · 15:00</td>
+                <td>64</td>
+                <td><span class="badge muted">Archived</span></td>
+                <td><button class="btn-sm btn-view">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Create / Edit Class Modal -->
+      <div class="modal hidden" id="createClassModal">
+        <div class="modal-content glass-card">
+          <h3 id="createClassModalTitle">Create New Class</h3>
+          <form id="createClassForm">
+            <label>Course Code <input type="text" id="newClassCode" placeholder="e.g. CS-320" required /></label>
+            <label>Title <input type="text" id="newClassTitle" placeholder="Course title" required /></label>
+            <label>Schedule <input type="text" id="newClassSchedule" placeholder="e.g. Mon, Wed 10:00" /></label>
+            <div class="modal-actions">
+              <button type="button" class="btn ghost" id="cancelCreateClass">Cancel</button>
+              <button type="submit" class="btn primary" id="saveClassBtn">Create</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-teacher-attendance">
+    <section class="view-panel">
+      <div class="page-header">
+        <div>
+          <h1>Attendance Generator</h1>
+          <p class="muted">CS-301 · Data Structures · Room 204</p>
+        </div>
+        <div class="header-actions">
+          <select id="sessionSelect" class="select">
+            <option>Session: 09:00–10:30</option>
+            <option>Session: 11:00–12:30</option>
+          </select>
+          <button class="btn ghost" id="btnEndSession">End Session</button>
+        </div>
+      </div>
+
+      <div class="attendance-layout">
+        <div class="card glass-card qr-card" data-burst="true" data-color="#22d3ee">
+          <h3>Dynamic QR Code</h3>
+          <p class="muted">Students scan to mark attendance. Code rotates every 30s for security.</p>
+          <div class="qr-placeholder" id="qrPlaceholder">
+            <div class="qr-mock">
+              <canvas id="qrCanvas" class="qr-canvas" width="200" height="200" aria-label="Dynamic attendance QR code"></canvas>
+            </div>
+            <div class="qr-timer">
+              <span id="qrCountdown">30</span>s remaining
+            </div>
+          </div>
+          <button class="btn primary full" id="refreshQR">↻ Refresh QR Now</button>
+        </div>
+
+        <div class="card glass-card checkin-card">
+          <h3>Live Check-in</h3>
+          <div class="checkin-counter">
+            <span class="counter-value" id="checkinCount">34</span>
+            <span class="counter-label">Students Checked In</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="checkinProgress" style="width: 71%"></div>
+          </div>
+          <p class="muted center">34 of 48 enrolled</p>
+
+          <ul class="recent-checkins" id="recentCheckins">
+            <li><span class="dot success"></span> Aisha Patel · just now</li>
+            <li><span class="dot success"></span> Marcus Lee · 12s ago</li>
+            <li><span class="dot success"></span> Priya Sharma · 28s ago</li>
+            <li><span class="dot success"></span> James Okonkwo · 41s ago</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-teacher-history">
+    <section class="view-panel">
+      <div class="page-header">
+        <div>
+          <h1>Attendance History &amp; Reports</h1>
+          <p class="muted">Sortable class-wise records · Export ready</p>
+        </div>
+        <div class="header-actions">
+          <input type="search" class="search-input" placeholder="Search student or class…" id="historySearch" />
+          <button class="btn ghost" id="btnExportHistoryCSV">Export Excel</button>
+          <button class="btn primary" id="btnExportHistoryPDF">Export PDF</button>
+        </div>
+      </div>
+
+      <div class="card glass-card">
+        <div class="table-wrap">
+          <table class="data-table sortable" id="historyTable">
+            <thead>
+              <tr>
+                <th data-sort="date">Date ↕</th>
+                <th data-sort="class">Class ↕</th>
+                <th data-sort="present">Present ↕</th>
+                <th data-sort="absent">Absent ↕</th>
+                <th data-sort="rate">Rate ↕</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-value="2026-08-10">Aug 10, 2026</td>
+                <td>CS-301</td>
+                <td>42</td>
+                <td>6</td>
+                <td><span class="rate high">87.5%</span></td>
+                <td><button class="btn-sm">Details</button></td>
+              </tr>
+              <tr>
+                <td data-value="2026-08-09">Aug 9, 2026</td>
+                <td>CS-210</td>
+                <td>48</td>
+                <td>4</td>
+                <td><span class="rate high">92.3%</span></td>
+                <td><button class="btn-sm">Details</button></td>
+              </tr>
+              <tr>
+                <td data-value="2026-08-08">Aug 8, 2026</td>
+                <td>CS-301</td>
+                <td>39</td>
+                <td>9</td>
+                <td><span class="rate mid">81.3%</span></td>
+                <td><button class="btn-sm">Details</button></td>
+              </tr>
+              <tr>
+                <td data-value="2026-08-07">Aug 7, 2026</td>
+                <td>CS-450</td>
+                <td>33</td>
+                <td>3</td>
+                <td><span class="rate high">91.7%</span></td>
+                <td><button class="btn-sm">Details</button></td>
+              </tr>
+              <tr>
+                <td data-value="2026-08-06">Aug 6, 2026</td>
+                <td>CS-210</td>
+                <td>45</td>
+                <td>7</td>
+                <td><span class="rate mid">86.5%</span></td>
+                <td><button class="btn-sm">Details</button></td>
+              </tr>
+              <tr>
+                <td data-value="2026-08-05">Aug 5, 2026</td>
+                <td>CS-301</td>
+                <td>44</td>
+                <td>4</td>
+                <td><span class="rate high">91.7%</span></td>
+                <td><button class="btn-sm">Details</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <!-- ========== STUDENT VIEWS ========== -->
+  <template id="tpl-student-login">
+    <section class="view-panel login-panel">
+      <div class="login-card glass-card">
+        <div class="login-head">
+          <span class="card-icon" aria-hidden="true">🎓</span>
+          <h2>Student Login</h2>
+        </div>
+        <p class="muted">Access attendance, timetable &amp; free-period planner</p>
+        <form id="studentLoginForm" class="login-form">
+          <label>
+            Student ID / Email
+            <input type="email" id="studentLoginEmail" placeholder="you@student.edu" autocomplete="username" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="studentLoginPassword" placeholder="Enter your password" autocomplete="current-password" required />
+          </label>
+          <p class="login-error hidden" id="studentLoginError"></p>
+          <button type="submit" class="btn primary full">Sign In</button>
+        </form>
+        <p class="demo-hint">Demo student — <strong>alex.rivera@student.edu</strong> / <strong>Learn@2026</strong></p>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-student-dashboard">
+    <section class="view-panel">
+      <div class="page-header">
+        <div>
+          <h1>Student Dashboard</h1>
+          <p class="muted">Alex Rivera · CS · Year 2 · ID: STU-20481</p>
+        </div>
+      </div>
+
+      <div class="kpi-grid student-kpis">
+        <div class="kpi-card glass-card radial-card" data-burst="true" data-color="#34d399">
+          <div class="kpi-label">Attendance Percentage</div>
+          <div class="radial-progress" data-percent="92">
+            <svg viewBox="0 0 36 36">
+              <path class="radial-bg"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path class="radial-fg"
+                stroke-dasharray="92, 100"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="radial-value">92%</span>
+          </div>
+          <div class="kpi-trend up">Excellent standing</div>
+        </div>
+
+        <div class="kpi-card glass-card">
+          <div class="kpi-label">Classes Today</div>
+          <div class="kpi-value">3</div>
+          <div class="kpi-trend">1 completed · 1 live · 1 upcoming</div>
+        </div>
+        <div class="kpi-card glass-card">
+          <div class="kpi-label">Free Periods</div>
+          <div class="kpi-value">3</div>
+          <div class="kpi-trend warn">Use them wisely</div>
+        </div>
+        <div class="kpi-card glass-card">
+          <div class="kpi-label">Streak</div>
+          <div class="kpi-value">12 days</div>
+          <div class="kpi-trend up">Keep it up!</div>
+        </div>
+      </div>
+
+      <div class="card glass-card">
+        <h3>Today’s Timetable</h3>
+        <div class="timetable">
+          <div class="tt-slot done">
+            <span class="tt-time">09:00–10:30</span>
+            <span class="tt-subject">CS-301 Data Structures</span>
+            <span class="badge success">Attended</span>
+          </div>
+          <div class="tt-slot free">
+            <span class="tt-time">10:30–11:00</span>
+            <span class="tt-subject">Free Period</span>
+            <span class="badge warn">Gap Detected</span>
+          </div>
+          <div class="tt-slot live">
+            <span class="tt-time">11:00–12:30</span>
+            <span class="tt-subject">CS-210 Algorithms</span>
+            <span class="badge success">In Progress</span>
+          </div>
+          <div class="tt-slot free">
+            <span class="tt-time">12:30–14:00</span>
+            <span class="tt-subject">Free Period</span>
+            <span class="badge warn">Gap Detected</span>
+          </div>
+          <div class="tt-slot">
+            <span class="tt-time">14:00–15:30</span>
+            <span class="tt-subject">CS-450 Machine Learning</span>
+            <span class="badge">Upcoming</span>
+          </div>
+          <div class="tt-slot free">
+            <span class="tt-time">15:30–17:00</span>
+            <span class="tt-subject">Free Period</span>
+            <span class="badge warn">Gap Detected</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-student-scan">
+    <section class="view-panel">
+      <div class="page-header">
+        <div>
+          <h1>Scan QR Code</h1>
+          <p class="muted">Mark your attendance instantly</p>
+        </div>
+      </div>
+
+      <div class="scan-layout">
+        <div class="card glass-card scan-card">
+          <div class="camera-placeholder" id="cameraBox">
+            <div class="camera-frame" id="cameraFrame">
+              <video id="scanCam" class="hidden" playsinline muted></video>
+              <div class="camera-frame-inner" id="cameraFrameInner">
+                <div class="scan-line"></div>
+                <p>Camera inactive</p>
+                <p class="small">Point your device at the teacher’s QR code</p>
+              </div>
+            </div>
+          </div>
+          <div class="scan-actions">
+            <button class="btn primary" id="btnUseCamera">📷 Use Camera</button>
+            <button class="btn ghost" id="btnUploadQR">Upload QR Image</button>
+            <button class="btn ghost" id="btnSimulateScan">Simulate a Scan</button>
+          </div>
+          <input type="file" id="qrFileInput" accept="image/*" class="hidden" />
+        </div>
+
+        <div class="card glass-card">
+          <h3>Scan Result</h3>
+          <div class="scan-result empty" id="scanResult">
+            <p class="muted">No scan performed yet. Use the camera, upload an image, or simulate a scan.</p>
+          </div>
+          <h3>Recent Scans</h3>
+          <ul class="scan-history" id="scanHistory">
+            <li>
+              <span class="dot success"></span>
+              <div>
+                <strong>CS-301 Data Structures</strong>
+                <span>Today · 09:12 · Present</span>
+              </div>
+            </li>
+            <li>
+              <span class="dot success"></span>
+              <div>
+                <strong>CS-210 Algorithms</strong>
+                <span>Yesterday · 11:05 · Present</span>
+              </div>
+            </li>
+            <li>
+              <span class="dot muted"></span>
+              <div>
+                <strong>CS-450 Machine Learning</strong>
+                <span>Aug 8 · Absent (no scan)</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+    </section>
+  </template>
+
+  <template id="tpl-student-planner">
+    <section class="view-panel">
+      <div class="page-header">
+        <div>
+          <h1>Free Period Productivity Planner</h1>
+          <p class="muted">Auto-detected gaps filled with suggested academic activities</p>
+        </div>
+      </div>
+
+      <div class="planner-layout">
+        <div class="card glass-card">
+          <h3>Today · Monday, Aug 10</h3>
+          <div class="timeline" id="freePeriodTimeline">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <div class="card glass-card">
+          <h3>Suggested Activities for Free Periods</h3>
+          <ul class="activity-list">
+            <li class="activity-item">
+              <span class="act-icon" aria-hidden="true">📖</span>
+              <div>
+                <strong>Review Data Structures notes</strong>
+                <p>Chapter 5 – Trees &amp; Heaps · ~25 min</p>
+              </div>
+              <button class="btn-sm">Add</button>
+            </li>
+            <li class="activity-item">
+              <span class="act-icon" aria-hidden="true">💻</span>
+              <div>
+                <strong>Practice Algorithm problems</strong>
+                <p>LeetCode Easy set · Sorting · ~40 min</p>
+              </div>
+              <button class="btn-sm">Add</button>
+            </li>
+            <li class="activity-item">
+              <span class="act-icon" aria-hidden="true">📝</span>
+              <div>
+                <strong>Complete ML Assignment draft</strong>
+                <p>Due Friday · Outline remaining sections</p>
+              </div>
+              <button class="btn-sm">Add</button>
+            </li>
+            <li class="activity-item">
+              <span class="act-icon" aria-hidden="true">🤝</span>
+              <div>
+                <strong>Group study – Algorithms</strong>
+                <p>Library Room 3 · peers available</p>
+              </div>
+              <button class="btn-sm">Add</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <!-- ========== ADMIN / ANALYTICS ========== -->
+  <template id="tpl-admin-login">
+    <section class="view-panel login-panel">
+      <div class="login-card glass-card">
+        <div class="login-head">
+          <span class="card-icon" aria-hidden="true">🛡️</span>
+          <h2>Administrator Login</h2>
+        </div>
+        <p class="muted">Restricted access · Institution analytics &amp; reports</p>
+        <form id="adminLoginForm" class="login-form">
+          <label>
+            Admin Email
+            <input type="email" id="adminLoginEmail" placeholder="admin@smartedu.edu" autocomplete="username" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="adminLoginPassword" placeholder="Enter your password" autocomplete="current-password" required />
+          </label>
+          <p class="login-error hidden" id="adminLoginError"></p>
+          <button type="submit" class="btn primary full">Sign In</button>
+        </form>
+        <p class="demo-hint">Demo admin — <strong>admin@smartedu.edu</strong> / <strong>Admin@2026</strong></p>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-admin-dashboard">
+    <section class="view-panel">
+      <div class="page-header">
+        <div>
+          <h1>Central Analytics &amp; Admin</h1>
+          <p class="muted">Cross-application telemetry · Institution overview</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn primary" id="btnExportPDF">Export Reports (PDF)</button>
+          <button class="btn ghost" id="btnExportExcel">Export Reports (Excel)</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card glass-card" data-burst="true" data-color="#34d399">
+          <div class="kpi-label">Institution Attendance</div>
+          <div class="kpi-value">89.4%</div>
+          <div class="kpi-trend up">↑ 1.2% this week</div>
+        </div>
+        <div class="kpi-card glass-card">
+          <div class="kpi-label">Active Sessions Today</div>
+          <div class="kpi-value">47</div>
+          <div class="kpi-trend">Across 12 departments</div>
+        </div>
+        <div class="kpi-card glass-card">
+          <div class="kpi-label">Students Online</div>
+          <div class="kpi-value">1,284</div>
+          <div class="kpi-trend">Live now</div>
+        </div>
+        <div class="kpi-card glass-card">
+          <div class="kpi-label">QR Scans (Today)</div>
+          <div class="kpi-value">3,912</div>
+          <div class="kpi-trend up">Peak at 10:15</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card glass-card">
+          <h3>Daily Attendance Trends</h3>
+          <canvas id="adminLineChart" height="220"></canvas>
+        </div>
+        <div class="card glass-card">
+          <h3>Class-by-Class Comparison</h3>
+          <canvas id="adminBarChart" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="card glass-card">
+        <h3>Department Snapshot</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Department</th>
+                <th>Classes</th>
+                <th>Avg Attendance</th>
+                <th>Students</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Computer Science</td>
+                <td>28</td>
+                <td><span class="rate high">91.2%</span></td>
+                <td>612</td>
+                <td><span class="badge success">Healthy</span></td>
+              </tr>
+              <tr>
+                <td>Electrical Eng.</td>
+                <td>22</td>
+                <td><span class="rate high">88.7%</span></td>
+                <td>489</td>
+                <td><span class="badge success">Healthy</span></td>
+              </tr>
+              <tr>
+                <td>Business Admin</td>
+                <td>19</td>
+                <td><span class="rate mid">84.1%</span></td>
+                <td>534</td>
+                <td><span class="badge warn">Watch</span></td>
+              </tr>
+              <tr>
+                <td>Mechanical Eng.</td>
+                <td>24</td>
+                <td><span class="rate high">90.5%</span></td>
+                <td>401</td>
+                <td><span class="badge success">Healthy</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card glass-card">
+        <div class="card-head">
+          <h3>Student Attendance Percentage</h3>
+          <input type="search" class="search-input" placeholder="Search student or class…" id="studentAttSearch" />
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="studentAttendanceTable">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Class</th>
+                <th>Attendance %</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <noscript>
+    <div style="position:fixed;inset:0;display:grid;place-items:center;background:#05070D;color:#E2E8F0;z-index:9999;padding:2rem;text-align:center">
+      SmartEdu needs JavaScript. Please enable it to use the 3D portal.
+    </div>
+  </noscript>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/jsqr.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
